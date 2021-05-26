@@ -2,3 +2,13 @@
 __pycache__/
 env/
 cache/
+
+
+# ignore random output notes
+*_out.txt
+
+# ignore random test files
+test_*
+
+# ignore files marked to be deleted
+del_*
