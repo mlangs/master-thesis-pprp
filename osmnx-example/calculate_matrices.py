@@ -117,10 +117,14 @@ print(f"The 'bad' nodes are: {bad_nodes}")
 print(f"The count of bad nodes is: {len(bad_nodes)}")
 
 
+# create a dictionary for the bad bad_nodes
+index_to_removed_osm = {key: val for key, val in index_to_osm.items() if key in bad_nodes}
+
 # remove the bad nodes from the data
 remaining_nodes = [index_to_osm[i] for i in range(len(time_matrix)) if i not in bad_nodes]
 index_to_osm = dict(enumerate(remaining_nodes))
 osm_to_index = {val: key for key, val in index_to_osm.items()}
+
 
 # initialize new time and distance matrices
 cleaned_distance_matrix = [[0 for i in range(len(distance_matrix)-len(bad_nodes))]
@@ -128,7 +132,7 @@ cleaned_distance_matrix = [[0 for i in range(len(distance_matrix)-len(bad_nodes)
 cleaned_time_matrix = [[0 for i in range(len(time_matrix)-len(bad_nodes))]
                        for j in range(len(time_matrix)-len(bad_nodes))]
 
-# fill new matrices
+# fill the new matrices
 row = 0
 for i in range(len(distance_matrix)):
     if i in bad_nodes:
@@ -152,6 +156,7 @@ print(
 with open(working_directory+'favoriten_data.py', 'w') as f:
     f.write(f'index_to_osm={index_to_osm}\n\n')
     f.write(f'osm_to_index={osm_to_index}\n\n')
+    f.write(f'index_to_removed_osm={index_to_removed_osm}\n\n')
     f.write(f'edges={edges}\n\n')
     f.write(f'bad_nodes={bad_nodes}\n\n')
     f.write(f'distance_matrix={cleaned_distance_matrix}\n\n')

@@ -9,7 +9,7 @@ working_directory = os.path.dirname(__file__) + "/"
 # load map
 G = ox.io.load_graphml(filepath=working_directory+'favoriten.osm')
 
-# plot map
+# just plot the map
 # ox.plot_graph(G, bgcolor='#999999', node_color='k', edge_color='b')
 # plt.show()
 
