@@ -2,10 +2,12 @@
 __pycache__/
 env/
 cache/
-
+output/
+.vscode/
 
 # ignore random output notes
-*_out.txt
+# *_out.txt
+out_*
 
 # ignore random test files
 test_*
