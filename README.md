@@ -58,6 +58,10 @@
 - plots the distance/travel times on the x axis and the count on the y axis
 - prints a map showing the removed nodes
 
+### 05_map_with_node_labels.py
+- uses matplotlib to plot a map using a `.osm` file
+- every node on the map is labelled with the node id (might take a few seconds to load)
+
 
 ## simulation/
 ### config.py
