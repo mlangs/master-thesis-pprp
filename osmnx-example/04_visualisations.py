@@ -9,7 +9,7 @@ import data_favoriten as d
 
 
 for matrix in [d.time_matrix, d.distance_matrix]:
-    chained_matrix = [item for item in itertools.chain(*matrix)]
+    chained_matrix = [round(item) for item in itertools.chain(*matrix)]
 
     counted = dict(Counter(chained_matrix))
 
