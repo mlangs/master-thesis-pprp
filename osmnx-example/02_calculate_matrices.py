@@ -7,7 +7,7 @@ import osmnx as ox
 
 
 start_time = time.time()
-working_directory = os.path.dirname(__file__) + "/"
+working_directory = os.path.dirname(os.path.abspath(__file__)) + "/"
 
 # load map data
 G = ox.io.load_graphml(filepath=working_directory+'favoriten.osm')
@@ -52,7 +52,7 @@ print(
 # calculate travel time for all edges
 for edge in edges:
     start, end = edge
-    edges[edge]['travel_time'] = edges[edge]["length"]/(edges[edge]['maxspeed']/3.6)
+    edges[edge]['travel_time'] = round(edges[edge]["length"]/(edges[edge]['maxspeed']/3.6))
 
     # needs to be added for finding shortest route
     G[start][end][0]['travel_time'] = edges[edge]['travel_time']
@@ -82,10 +82,10 @@ for start in G.nodes():
             # uses 'dijkstra'
             route = ox.shortest_path(G, start, end, weight='travel_time')
 
-            distance_matrix[start_index][end_index] = round(sum(
-                [edges[(s, e)]['length'] for s, e in zip(route[:-1], route[1:])]))
-            time_matrix[start_index][end_index] = round(sum(
-                [edges[(s, e)]['travel_time'] for s, e in zip(route[:-1], route[1:])]))
+            distance_matrix[start_index][end_index] = sum(
+                [edges[(s, e)]['length'] for s, e in zip(route[:-1], route[1:])])
+            time_matrix[start_index][end_index] = sum(
+                [edges[(s, e)]['travel_time'] for s, e in zip(route[:-1], route[1:])])
 
         except:
             distance_matrix[start_index][end_index] = None
@@ -122,7 +122,7 @@ print(f"The 'bad' nodes are: {bad_nodes}")
 print(f"The count of bad nodes is: {len(bad_nodes)}")
 
 
-# create a dictionary for the bad bad_nodes
+# create a dictionary for the bad_nodes
 index_to_removed_osm = {key: val for key, val in index_to_osm.items() if key in bad_nodes}
 
 # remove the bad nodes from the data
@@ -156,6 +156,9 @@ del distance_matrix
 
 print("The new dimensions of the time_matrix are:" + \
     f"{len(cleaned_time_matrix)}x{len(cleaned_time_matrix)}")
+
+
+ox.io.save_graphml(G, filepath=working_directory+'map_data.osm')
 
 # save the data to file
 with open(working_directory+'data_favoriten.py', 'w') as f:
