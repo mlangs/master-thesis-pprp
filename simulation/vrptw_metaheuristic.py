@@ -144,8 +144,8 @@ def plan_routes(data, max_patrolling_time_per_vehicle=86400, patrolling_time_per
     search_parameters = pywrapcp.DefaultRoutingSearchParameters()
     search_parameters.log_search = False
 
-    #search_parameters.first_solution_strategy = (
-    #    routing_enums_pb2.FirstSolutionStrategy.PATH_CHEAPEST_ARC)
+    search_parameters.first_solution_strategy = (
+        routing_enums_pb2.FirstSolutionStrategy.PATH_CHEAPEST_ARC)
 
     search_parameters.local_search_metaheuristic = (
         routing_enums_pb2.LocalSearchMetaheuristic.GUIDED_LOCAL_SEARCH)
