@@ -117,7 +117,7 @@ class Tests(unittest.TestCase):
 
 
 
-    def test_VehicleClass(self):
+    def test_VehicleClass_update(self):
         start = 17322884
         v_id = 1
 
@@ -147,33 +147,86 @@ class Tests(unittest.TestCase):
 
 
 
-    def test_choose_closest_vehicle(self):
-        pass
+    def test_VehicleClass_update_current_route(self):
+        start = 17322884
+        v_id = 1
 
+        v = mvf.Vehicle(v_id, start)
+        v.route = [[17322884,   0,      0],
+                   [103664213,  35,     215],
+                   [293281751,  249,    429],
+                   [1829857697, 481,    661]]
+
+        current_time=34
+        new_route = [[1,  1,     1],
+                     [0,   36,     36]]
+        result_route = [[17322884,   0,      0],
+                        [103664213,  35,     35],
+                        [17322884,   70,     70]]
+        data = {'index_to_osm': {0:17322884, 1:103664213, 2:293281751, 3:1829857697}}
+
+        v.update(current_time, d.time_matrix, d.osm_to_index, c.path)
+        v.update_current_route(current_time, data, new_route)
+
+
+        self.assertTrue(v.old_routes == [[[17322884,   0,      0],
+                                          [103664213,  35,     215],
+                                          [293281751,  249,    429],
+                                          [1829857697, 481,    661]]])
+        self.assertTrue(v.route == result_route)
+
+
+
+    def test_choose_response_vehicle(self):
+        current_time = 34
+        vehicles = [mvf.Vehicle(0, 293281751), mvf.Vehicle(1, 17322884)]
+        vehicles[0].route =[[293281751, 0, 0]]
+        vehicles[1].route = [[17322884,   0,      0],
+                             [103664213,  35,     215],
+                             [293281751,  249,    429],
+                             [1829857697, 481,    661]]
+
+        emergencies = {0: {"start_time": 34,
+                           "duration": 10,
+                           "arrival_time": None,
+                           "end_time": None,
+                           "assigned_vehicle_id": None,
+                           "location": 103664213}}
+
+        for v in vehicles:
+            v.update(current_time, d.time_matrix, d.osm_to_index, c.path)
+
+        v_id, arrival_time, return_time = mvf.choose_response_vehicle(emergencies[0],
+                                                                      vehicles,
+                                                                      current_time,
+                                                                      d.time_matrix,
+                                                                      d.osm_to_index,
+                                                                      method='fastest')
+        self.assertTrue(v_id == 1)
+        self.assertTrue(arrival_time == 35)
+        self.assertTrue(return_time == 45)
 
 
     def test_update_vpl(self):
-        pass
+        result_visited_patrol_locations = [103664213]
 
+        vehicles = [mvf.Vehicle(0, 103664213)]
+        vehicles[0].route = [[17322884,   0,      0],
+                             [103664213,  35,     215],
+                             [293281751,  249,    429],
+                             [1829857697, 481,    661]]
+        patrol_locations = [103664213, 293281751]
+        visited_patrol_locations = []
+        current_time = 216
+        patrolling_time_per_location = 60*3
 
+        visited_patrol_locations = mvf.update_vpl(visited_patrol_locations,
+                                                  patrol_locations,
+                                                  vehicles,
+                                                  current_time,
+                                                  patrolling_time_per_location)
 
-    def test_save_to_file(self):
-        pass
-
-
-
-    # main file tests
-    def test_run_simulation(self):
-        # could test if results are as expected
-        # for example the break duration, driving time etc
-        pass
-
-
-
-    def test_main(self):
-        # could test if results are as expected
-        # for example the break duration, driving time etc
-        pass
+        self.assertTrue(visited_patrol_locations == result_visited_patrol_locations)
 
 
 if __name__ == '__main__':

@@ -193,24 +193,6 @@ class Vehicle():
         self.old_routes = [] # using real nodes
         self.route = [] # using real nodes
 
-    def update_current_route(self, current_time, data, route):
-        """
-        backups the route and updates it with the new route data
-        """
-        if current_time > 0:
-            self.old_routes.append(self.route.copy())
-
-        # cut the route if not fully driven
-        for i, p in enumerate(self.route):
-            if p[1] > current_time:
-                self.route = self.route[:i]
-                break
-
-        self.route += [[data['index_to_osm'][p[0]],
-                        current_time+p[1],
-                        current_time+p[2]]
-                       for p in route]
-
 
     def update(self, current_time, time_matrix, osm_to_index, path):
         """
@@ -260,6 +242,25 @@ class Vehicle():
                 self.time_at_curr_location = current_time-self.route[-1][2]
 
 
+    def update_current_route(self, current_time, data, route):
+        """
+        backups the route and updates it with the new route data
+        """
+        if current_time > 0:
+            self.old_routes.append(self.route.copy())
+
+        # cut the route if not fully driven
+        for i, p in enumerate(self.route):
+            if p[1] > current_time:
+                self.route = self.route[:i]
+                break
+
+        self.route += [[data['index_to_osm'][p[0]],
+                        current_time+p[1],
+                        current_time+p[2]]
+                       for p in route]
+
+
     def print_vehicle(self):
         """
         just for debugging
@@ -281,7 +282,7 @@ def choose_response_vehicle(emergency,
                             current_time,
                             time_matrix,
                             osm_to_index,
-                            method='random'):
+                            method='fastest'):
     """
     chooses the vehicle which should report to the emergency
     two methods are available:
