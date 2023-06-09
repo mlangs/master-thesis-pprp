@@ -1,5 +1,5 @@
 """
-or-tools functions
+ortools functions
 """
 
 from ortools.constraint_solver import routing_enums_pb2

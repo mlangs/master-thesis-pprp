@@ -7,7 +7,7 @@ import concurrent.futures # used for multi-processing
 import config as c # the settings file
 import data_favoriten as d # processed map data
 import mvf # "function module"
-import vrptw_metaheuristic as vm # or-tools functions
+import vrptw_metaheuristic as vm # ortools functions
 
 
 def run_simulation():
@@ -79,15 +79,25 @@ def run_simulation():
 
         # if cars are available, new routes can be calculated
         if any([v.emergency_status is False for v in vehicles]):
-            # get data dictionary usable by or-tools
+            locations_and_windows = mvf.update_locations_and_windows(patrol_locations,
+                                                                     time_windows,
+                                                                     vehicles,
+                                                                     current_time,
+                                                                     c.POLICE_STATION,
+                                                                     c.PATROLLING_TIME_PER_LOCATION)
+
+            starts, dummy_locations, updated_patrol_locations, time_windows = locations_and_windows
+
+
+            # get data dictionary usable by ortools
             data = mvf.create_data_model(patrol_locations,
-                                        time_windows,
-                                        vehicles,
-                                        current_time,
-                                        c.POLICE_STATION,
-                                        c.PATROLLING_TIME_PER_LOCATION,
-                                        d.time_matrix,
-                                        d.osm_to_index)
+                                         updated_patrol_locations,
+                                         time_windows,
+                                         starts,
+                                         dummy_locations,
+                                         c.POLICE_STATION,
+                                         d.time_matrix,
+                                         d.osm_to_index)
 
             # calculating the routes
             planned_routes = vm.plan_routes(data,
@@ -161,6 +171,9 @@ def run_simulation():
                  current_time+vehicles[v_id].time_to_curr_location,
                  current_time+vehicles[v_id].time_to_curr_location])
             vehicles[v_id].route.append([location, arrival_time, return_time])
+            vehicles[v_id].current_location = location
+            vehicles[v_id].time_to_curr_locaton = 0
+            vehicles[v_id].time_at_curr_locaton = 0
 
             # adding the event for the end of the emergency to the event queue
             # (events will be sorted at the start of every loop)

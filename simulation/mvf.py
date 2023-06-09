@@ -9,15 +9,17 @@ from pprint import pprint
 import osmnx as ox
 
 
-def create_emergencies( number_of_events_mu,
-                        number_of_events_sigma,
-                        time_of_event_min,
-                        time_of_event_max,
-                        event_duration_mu,
-                        event_duration_sigma,
-                        locations_of_events):
-    """creates random interruptions based on the configuration data
-     in the settings file"""
+def create_emergencies(number_of_events_mu,
+                       number_of_events_sigma,
+                       time_of_event_min,
+                       time_of_event_max,
+                       event_duration_mu,
+                       event_duration_sigma,
+                       locations_of_events):
+    """
+    creates random interruptions using normal distributed random numbers
+    based on the configuration data in the settings file
+    """
 
     total_number_of_events = -1
     while total_number_of_events < 0:
@@ -49,25 +51,20 @@ def create_emergencies( number_of_events_mu,
 
 
 
-def create_data_model(patrol_locations,
-                      time_windows,
-                      vehicles,
-                      current_time,
-                      police_station,
-                      patrolling_time_per_location,
-                      time_matrix,
-                      osm_to_index):
+def update_locations_and_windows(patrol_locations,
+                                 time_windows,
+                                 vehicles,
+                                 current_time,
+                                 police_station,
+                                 patrolling_time_per_location):
     """
-    puts the time windows, time matrix, number of vehicles, starting
-    and end points from the settings file in a usable format for google or-tools
-    and returns it as a dictionary called data
+    prepares the locations and time windows for the create_data_model function
+    time windows need to get handled differently for different cases
+    to force the correct behavior
     """
 
-    data = {}
     updated_patrol_locations = patrol_locations.copy()
-    # patrol_locations_to_visit = patrol_locations.copy()
     dummy_locations = []
-
 
     # the police station needs to be index 0 and cannot be a patrol_location
     if police_station not in updated_patrol_locations:
@@ -85,44 +82,56 @@ def create_data_model(patrol_locations,
         starts.append(start)
         arrival_time = v.time_to_curr_location
 
-        if start not in updated_patrol_locations:
+        if start not in updated_patrol_locations: # not patrol location and not police station
             dummy_locations.append([len(updated_patrol_locations), start])
             updated_patrol_locations.append(start)
             time_windows.append((arrival_time, arrival_time))
 
-        elif start == police_station:
+        elif start == police_station: # police station
             dummy_locations.append([len(updated_patrol_locations), start])
             updated_patrol_locations.append(start)
             time_windows.append((arrival_time, 86400))
 
-        elif start not in patrol_locations: # other start
+        elif start not in patrol_locations: # arbitrary other start
             if starts.count(start) > 1: # duplicated start
                 dummy_locations.append([len(updated_patrol_locations), start])
             updated_patrol_locations.append(start)
             #departure_time = 86400 if start == police_station else arrival_time
             time_windows.append((arrival_time, arrival_time))
 
-        elif start in patrol_locations:
-            #print()
-            #print(v.route)
-            #print(start)
+        elif start in patrol_locations: # currently at patrol location
             if starts.count(start) == 1:
                 idx = updated_patrol_locations.index(start)
                 old_window = time_windows[idx]
                 if old_window[0] <= current_time+arrival_time and \
                     current_time+arrival_time+patrolling_time_per_location <= old_window[1]:
-                    #t = arrival_time + patrolling_time_per_location
-                    #time_windows[idx] = (t, t)
-                    time_windows[idx] = (arrival_time+patrolling_time_per_location,
-                                        arrival_time+patrolling_time_per_location)
+                    time_windows[idx] = (arrival_time+patrolling_time_per_location-v.time_at_curr_location,
+                                        arrival_time+patrolling_time_per_location-v.time_at_curr_location)
             else: # duplicated start from patrol location
                 dummy_locations.append([len(updated_patrol_locations), start])
                 updated_patrol_locations.append(start)
                 time_windows.append((arrival_time, arrival_time))
 
+    return starts, dummy_locations, updated_patrol_locations, time_windows
+
+
+
+def create_data_model(patrol_locations,
+                      updated_patrol_locations,
+                      time_windows,
+                      starts,
+                      dummy_locations,
+                      police_station,
+                      time_matrix,
+                      osm_to_index):
+    """
+    creates the data dictionary, which is needed for ortools
+    """
+
+    data = {}
 
     # creates the dictionary to translate the real node numbers to simple ones
-    # which can be used by or-tools
+    # which can be used by ortools
     data['osm_to_index'] = {val: key for key, val in enumerate([police_station]+patrol_locations)}
     data['index_to_osm'] = {val:key for key, val in data['osm_to_index'].items()}
     data['index_to_osm'].update(dummy_locations)
@@ -130,7 +139,7 @@ def create_data_model(patrol_locations,
     # indices of all relevant locations in the huge time_matrix
     locations = [osm_to_index[location] for location in updated_patrol_locations]
 
-    # initializes the time matrix for or-tools
+    # initializes the time matrix for ortools
     data['time_matrix'] = [[0 for i in updated_patrol_locations] for j in updated_patrol_locations]
 
     # transfers the important time matrix elements
@@ -145,13 +154,15 @@ def create_data_model(patrol_locations,
 
     data['starts'] = []
     for start in starts:
-        if (start in data['osm_to_index']) and (data['osm_to_index'][start] not in data['starts']):
+        if ((start != police_station) and
+            (start in data['osm_to_index']) and
+            (data['osm_to_index'][start] not in data['starts'])):
             data['starts'].append(data['osm_to_index'][start])
         else:
-            idx, osm_idx = dummy_locations.pop(0)
+            dummy_start = dummy_locations.pop(0)
+            idx = dummy_start[0]
             data['starts'].append(idx)
 
-    # data['starts'] = [data['osm_to_index'][start] for start in starts]
     data['ends'] = [data['police_station'] for _ in range(data['num_vehicles'])]
     return data
 
@@ -183,6 +194,9 @@ def update_patrol_locations_and_time_windows(patrol_locations,
 
 
 class Vehicle():
+    """
+    Vehicle class to update vehicles and to keep track of vehicle information
+    """
     def __init__(self, v_id, start):
         self.v_id=v_id
         self.emergency_status = False
@@ -196,7 +210,7 @@ class Vehicle():
 
     def update(self, current_time, time_matrix, osm_to_index, path):
         """
-        calculates current_location and time_to_curr_location
+        calculates current_location, time_to_curr_location, time_at_curr_location
         """
 
         # if current_time is 0, there is nothing to do
@@ -244,7 +258,7 @@ class Vehicle():
 
     def update_current_route(self, current_time, data, route):
         """
-        backups the route and updates it with the new route data
+        does a backup of the route and updates it with the new route data
         """
         if current_time > 0:
             self.old_routes.append(self.route.copy())
@@ -255,15 +269,18 @@ class Vehicle():
                 self.route = self.route[:i]
                 break
 
+        # adding the new time windows adjusted to global time
+        # the max statement is needed because ortools thinks
+        # the vehicle is waiting at the location
         self.route += [[data['index_to_osm'][p[0]],
-                        current_time+p[1],
+                        current_time+max(p[1], self.time_to_curr_location),
                         current_time+p[2]]
                        for p in route]
 
 
     def print_vehicle(self):
         """
-        just for debugging
+        used only for debugging
         """
         print(self.v_id)
         print(self.emergency_status)
@@ -287,10 +304,10 @@ def choose_response_vehicle(emergency,
     chooses the vehicle which should report to the emergency
     two methods are available:
     - random
-    - fastest: fastest travel time
+    - fastest: fastest travel_time
 
     uses the current_location and time_to_curr_location properties
-    (they should be updated first!)
+    (they need to be updated first!)
 
     returns the vehicle id of the response vehicle,
     the arrival time at the emergency and the departure_time after
@@ -306,6 +323,8 @@ def choose_response_vehicle(emergency,
         travel_time = time_matrix[osm_to_index[current_location]][osm_to_index[emergency['location']]]
 
     elif method=='fastest':
+
+        # collecting the reaction time for all available vehicles
         time_data = []
         for v in vehicles:
             if v.emergency_status is True:
@@ -331,17 +350,21 @@ def choose_response_vehicle(emergency,
 def update_vpl(visited_patrol_locations, patrol_locations, vehicles, current_time, patrolling_time_per_location):
     """
     updates the visited patrol locations
+    a patrol location is considered "visited" if the full patrolling_time_per_location
+    was spend there
     """
     for v in vehicles:
         for p in v.route:
-            if p[0] in patrol_locations and p[0] not in visited_patrol_locations:
-                if p[1]+patrolling_time_per_location <= p[2] and p[2] <= current_time:
-                    visited_patrol_locations.append(p[0])
-                #elif p[1] <= current_time and current_time < p[2]:
-                #    v.patrolling_status = True
+            if p[0] in visited_patrol_locations or p[0] not in patrol_locations:
+                continue
 
-                #if p[1] < current_time:
-                #   visited_patrol_locations.append(p[0])
+            if p[1]+patrolling_time_per_location <= p[2] and p[2] <= current_time:
+                visited_patrol_locations.append(p[0])
+            #elif p[1] <= current_time and current_time < p[2]:
+            #    v.patrolling_status = True
+
+            #if p[1] < current_time:
+            #   visited_patrol_locations.append(p[0])
     return visited_patrol_locations
 
 
