@@ -91,7 +91,6 @@ class Tests(unittest.TestCase):
                         ]
         police_station = 17322882
         patrolling_time_per_location = 3*60
-        current_time = 500
 
         vehicles = [mvf.Vehicle(i, None) for i in range(6)]
 
@@ -123,7 +122,6 @@ class Tests(unittest.TestCase):
         locations_and_windows = mvf.update_locations_and_windows(patrol_locations,
                                                                  time_windows,
                                                                  vehicles,
-                                                                 current_time,
                                                                  police_station,
                                                                  patrolling_time_per_location)
         starts, dummy_locations, updated_patrol_locations, time_windows = locations_and_windows
