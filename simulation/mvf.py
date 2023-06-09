@@ -54,7 +54,6 @@ def create_emergencies(number_of_events_mu,
 def update_locations_and_windows(patrol_locations,
                                  time_windows,
                                  vehicles,
-                                 current_time,
                                  police_station,
                                  patrolling_time_per_location):
     """
@@ -100,14 +99,15 @@ def update_locations_and_windows(patrol_locations,
             time_windows.append((arrival_time, arrival_time))
 
         elif start in patrol_locations: # currently at patrol location
+
+            # first appearance
             if starts.count(start) == 1:
                 idx = updated_patrol_locations.index(start)
-                old_window = time_windows[idx]
-                if old_window[0] <= current_time+arrival_time and \
-                    current_time+arrival_time+patrolling_time_per_location <= old_window[1]:
-                    time_windows[idx] = (arrival_time+patrolling_time_per_location-v.time_at_curr_location,
-                                        arrival_time+patrolling_time_per_location-v.time_at_curr_location)
-            else: # duplicated start from patrol location
+                time_windows[idx] = (arrival_time+patrolling_time_per_location-v.time_at_curr_location,
+                                     arrival_time+patrolling_time_per_location-v.time_at_curr_location)
+
+            # duplicated start from patrol location
+            else:
                 dummy_locations.append([len(updated_patrol_locations), start])
                 updated_patrol_locations.append(start)
                 time_windows.append((arrival_time, arrival_time))
@@ -265,6 +265,8 @@ class Vehicle():
 
         # cut the route if not fully driven
         for i, p in enumerate(self.route):
+            if p[1] <= current_time <= p[2]:
+                self.route[i][2] = current_time
             if p[1] > current_time:
                 self.route = self.route[:i]
                 break

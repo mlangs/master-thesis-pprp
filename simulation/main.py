@@ -69,20 +69,19 @@ def run_simulation():
         # the route back to the police station is calculated
         # for all vehicles which currently handle an emergency
         # and the while loop is exited
-        if not patrol_locations:
-            for v in vehicles:
-                if v.route[-1][0] != c.POLICE_STATION:
-                    travel_time = d.time_matrix[d.osm_to_index[v.current_location]][d.osm_to_index[c.POLICE_STATION]]
-                    arrival_time = v.route[-1][2]+travel_time
-                    v.route.append([c.POLICE_STATION, arrival_time, arrival_time])
-            break
+        #if not patrol_locations:
+        #    for v in vehicles:
+        #        if v.route[-1][0] != c.POLICE_STATION:
+        #            travel_time = d.time_matrix[d.osm_to_index[v.current_location]][d.osm_to_index[c.POLICE_STATION]]
+        #            arrival_time = v.route[-1][2]+travel_time+v.time_to_curr_location
+        #            v.route.append([c.POLICE_STATION, arrival_time, arrival_time])
+        #    break
 
         # if cars are available, new routes can be calculated
         if any([v.emergency_status is False for v in vehicles]):
             locations_and_windows = mvf.update_locations_and_windows(patrol_locations,
                                                                      time_windows,
                                                                      vehicles,
-                                                                     current_time,
                                                                      c.POLICE_STATION,
                                                                      c.PATROLLING_TIME_PER_LOCATION)
 
@@ -162,7 +161,7 @@ def run_simulation():
 
             # keep track of the emergency and set the status for the vehicles
             vehicles[v_id].emergency_status = True
-            vehicles[v_id].emergency_ids.append([emergency_id, arrival_time])
+            vehicles[v_id].emergency_ids.append(emergency_id)
 
             # adjusting the route and appending the new arrival location
             vehicles[v_id].update_current_route(current_time, data, [])

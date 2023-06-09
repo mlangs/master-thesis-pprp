@@ -1,3 +1,7 @@
+"""
+some test cases, but not very excessive
+"""
+
 import unittest
 
 import config as c
