@@ -215,7 +215,7 @@ def get_patrol_locations_mismatch(data, patrol_locations):
                 if window[1] > window2[0]:
                     count[key] -= 1
 
-    return {key: val for key, val in count.items() if val != 0}
+    return {key: val for key, val in count.items() if val > 0}
 
 
 
