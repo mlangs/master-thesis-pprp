@@ -398,13 +398,11 @@ class Tests(unittest.TestCase):
         patrol_locations = [103664213, 293281751]
         visited_patrol_locations = []
         current_time = 216
-        patrolling_time_per_location = 60*3
 
         visited_patrol_locations = mvf.update_vpl(visited_patrol_locations,
                                                   patrol_locations,
                                                   vehicles,
-                                                  current_time,
-                                                  patrolling_time_per_location)
+                                                  current_time)
 
         self.assertTrue(visited_patrol_locations == result_visited_patrol_locations)
 
