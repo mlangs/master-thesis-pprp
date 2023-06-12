@@ -17,12 +17,14 @@ def get_data_from_file(file):
     return data
 
 
+
 def get_wrong_emergency_length_count(data):
     """
     returns the number of times the emergency duration is not equal to the end-arrival times
     """
     return sum(emergency['duration'] != emergency['end_time']-emergency['arrival_time']
                for emergency in data['emergencies'].values() if emergency['end_time'])
+
 
 
 def get_did_not_reach_police_station_count(data, police_station):
@@ -38,6 +40,7 @@ def get_did_not_reach_police_station_count(data, police_station):
     return count
 
 
+
 def get_missed_emergency_mismatch(data):
     """
     returns the number of missed events - number of extra vehicles
@@ -46,6 +49,7 @@ def get_missed_emergency_mismatch(data):
     count = sum(emergency['assigned_vehicle_id']
                 is None for emergency in data['emergencies'].values())
     return count - len(data['extra_vehicles'])
+
 
 
 def get_wrong_travel_time_count(data, time_matrix, osm_to_index):
@@ -61,6 +65,7 @@ def get_wrong_travel_time_count(data, time_matrix, osm_to_index):
     return count
 
 
+
 def get_wrong_time_order_count(data):
     """
     returns the number of times a vehicle leaves before it arrives
@@ -70,6 +75,7 @@ def get_wrong_time_order_count(data):
         route = data['vehicles'][v_id]['route']
         count += sum(p[2] < p[1] for p in route)
     return count
+
 
 
 def get_event_wrong_times_count(data):
@@ -84,6 +90,7 @@ def get_event_wrong_times_count(data):
               emergency['arrival_time'] < emergency['start_time']):
             count += 1
     return count
+
 
 
 def get_random_wait_times_old(data, patrol_locations, police_station):
@@ -108,6 +115,7 @@ def get_random_wait_times_old(data, patrol_locations, police_station):
     return time
 
 
+
 def get_random_wait_times(data, patrol_locations, police_station):
     """
     returns the time a vehicle spends waiting, when it is not supposed to
@@ -128,6 +136,7 @@ def get_random_wait_times(data, patrol_locations, police_station):
     return time
 
 
+
 def get_time_at_police_station(data, police_station):
     """
     returns the time spend at the police station
@@ -142,12 +151,14 @@ def get_time_at_police_station(data, police_station):
     return time
 
 
+
 def get_visited_patrol_locations_duplicate_mismatch(data):
     """
     returns the number of duplicates in the visited_patrol_locations list
     duplicates are not allowed
     """
     return len(data['visited_patrol_locations']) == len(set(data['visited_patrol_locations']))
+
 
 
 def get_patrol_locations_mismatch(data, patrol_locations):
@@ -207,6 +218,7 @@ def get_patrol_locations_mismatch(data, patrol_locations):
     return {key: val for key, val in count.items() if val != 0}
 
 
+
 def get_patrolling_times_mismatch(data, police_station, patrolling_time_per_location):
     """
     returns the number of times the patrolling time is not the patrolling_time_per_location
@@ -225,6 +237,7 @@ def get_patrolling_times_mismatch(data, police_station, patrolling_time_per_loca
                     if [p[0], p[2]] not in [[x[0], x[2]] for x in emergency_reference]:
                         count += 1
         return count
+
 
 
 def get_time_patrolling_mismatch(data, patrolling_time_per_location):
@@ -248,6 +261,7 @@ def get_time_patrolling_mismatch(data, patrolling_time_per_location):
                 time -= data['emergencies'][str(emergency_id)]['duration']
 
     return len(data['visited_patrol_locations'])*patrolling_time_per_location - time
+
 
 
 def main():
@@ -325,6 +339,7 @@ def main():
         time_patrolling_mismatch = get_time_patrolling_mismatch(
             data, c.PATROLLING_TIME_PER_LOCATION)
         assert time_patrolling_mismatch >= 0
+
 
 
 if __name__ == '__main__':

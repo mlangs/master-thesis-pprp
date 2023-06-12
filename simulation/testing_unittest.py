@@ -1,5 +1,6 @@
 """
 some test cases, but not very excessive
+relys on the favoriten data
 """
 
 import unittest
@@ -9,12 +10,10 @@ import data_favoriten as d
 import mvf
 
 
-
 class Tests(unittest.TestCase):
     """
     some test cases, but not very excessive
     """
-
     def test_settings(self):
         """
         some tests for the config files
@@ -29,7 +28,6 @@ class Tests(unittest.TestCase):
         self.assertTrue(c.PATROLLING_TIME_PER_LOCATION > 0)
         self.assertTrue(c.MAX_PATROLLING_TIME_PER_VEHICLE > 0)
         self.assertFalse(c.POLICE_STATION in c.PATROL_LOCATIONS)
-
 
 
     def test_create_emergencies(self):
@@ -72,7 +70,6 @@ class Tests(unittest.TestCase):
                 self.assertTrue(emergency['end_time'] is None)
                 self.assertTrue(emergency['assigned_vehicle_id'] is None)
                 self.assertTrue(emergency['location'] in possible_locations_of_events)
-
 
 
     def test_update_locations_and_windows(self):
@@ -384,6 +381,7 @@ class Tests(unittest.TestCase):
         self.assertTrue(return_time == 45)
 
 
+
     def test_update_vpl(self):
         """
         some tests for the update_vpl function
@@ -405,6 +403,7 @@ class Tests(unittest.TestCase):
                                                   current_time)
 
         self.assertTrue(visited_patrol_locations == result_visited_patrol_locations)
+
 
 
 if __name__ == '__main__':
