@@ -260,6 +260,17 @@ class Vehicle():
         """
         does a backup of the route and updates it with the new route data
         """
+        def clean_route(route):
+            cleaned_route = []
+            for p in route:
+                if not cleaned_route:
+                    cleaned_route.append(p)
+                elif cleaned_route[-1][0] == p[0]:
+                    cleaned_route[-1] = [cleaned_route[-1][0], cleaned_route[-1][1], p[2]]
+                else:
+                    cleaned_route.append(p)
+            return cleaned_route
+
         if current_time > 0:
             self.old_routes.append(self.route.copy())
 
@@ -278,6 +289,8 @@ class Vehicle():
                         current_time+max(p[1], self.time_to_curr_location),
                         current_time+p[2]]
                        for p in route]
+
+        self.route = clean_route(self.route)
 
 
     def print_vehicle(self):
@@ -349,24 +362,24 @@ def choose_response_vehicle(emergency,
 
 
 
-def update_vpl(visited_patrol_locations, patrol_locations, vehicles, current_time, patrolling_time_per_location):
+def update_vpl(visited_patrol_locations, patrol_locations, vehicles, current_time):
     """
     updates the visited patrol locations
-    a patrol location is considered "visited" if the full patrolling_time_per_location
-    was spend there
+    a patrol location is considered "visited" if some time
+    was spend there (also if the time was during an emergency)
     """
     for v in vehicles:
         for p in v.route:
-            if p[0] in visited_patrol_locations or p[0] not in patrol_locations:
+            if p[0] not in patrol_locations:
+                continue
+            if p[0] in visited_patrol_locations:
                 continue
 
-            if p[1]+patrolling_time_per_location <= p[2] and p[2] <= current_time:
+            if p[1] < p[2] and p[2] <= current_time:
                 visited_patrol_locations.append(p[0])
-            #elif p[1] <= current_time and current_time < p[2]:
-            #    v.patrolling_status = True
+            #if p[1]+patrolling_time_per_location <= p[2] and p[2] <= current_time:
+            #    visited_patrol_locations.append(p[0])
 
-            #if p[1] < current_time:
-            #   visited_patrol_locations.append(p[0])
     return visited_patrol_locations
 
 

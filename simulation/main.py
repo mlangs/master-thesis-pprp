@@ -126,8 +126,7 @@ def run_simulation():
         visited_patrol_locations = mvf.update_vpl(visited_patrol_locations,
                                                   c.PATROL_LOCATIONS,
                                                   vehicles,
-                                                  current_time,
-                                                  c.PATROLLING_TIME_PER_LOCATION)
+                                                  current_time)
 
         # handle the event
         if current_event['type'] == 'end':
@@ -163,6 +162,13 @@ def run_simulation():
             vehicles[v_id].emergency_status = True
             vehicles[v_id].emergency_ids.append(emergency_id)
 
+            # adding the current location to visited_patrol_locations
+            # if the vehicles was there patrolling
+            if  vehicles[v_id].current_location in c.PATROL_LOCATIONS and \
+                vehicles[v_id].current_location not in visited_patrol_locations and \
+                vehicles[v_id].time_at_curr_location > 0:
+                visited_patrol_locations.append(vehicles[v_id].current_location)
+
             # adjusting the route and appending the new arrival location
             vehicles[v_id].update_current_route(current_time, data, [])
             vehicles[v_id].route.append(
@@ -188,8 +194,7 @@ def run_simulation():
     visited_patrol_locations = mvf.update_vpl(visited_patrol_locations,
                                               c.PATROL_LOCATIONS,
                                               vehicles,
-                                              current_time+86400, # jump full day to catch everything
-                                              c.PATROLLING_TIME_PER_LOCATION)
+                                              current_time+86400) # jump full day to catch everything
 
 
     # save seed, vehicle data (including routes), visited patrol locations, emergencies
