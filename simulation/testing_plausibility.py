@@ -180,41 +180,12 @@ def get_patrol_locations_mismatch(data, patrol_locations):
     for location in data['visited_patrol_locations']:
         count[location] -= 1
 
-    # missing the patrol locations that where visited for patrolling
-    # and later for emergencies
-    emergency_reference = [[emergency['location'], emergency['arrival_time'],
-                            emergency['end_time']] for emergency in data['emergencies'].values()]
+    # removing emergency locations
+    for emergency in data['emergencies'].values():
+        if emergency['location'] in patrol_locations and emergency['arrival_time']:
+            count[emergency['location']] -= 1
 
-    for location in count:
-        all_appearances = []
-        for v_id in data['vehicles'].keys():
-            route = data['vehicles'][v_id]['route']
-            for p in route:
-                if p[0] in count:
-                    all_appearances.append([p[0], p[1], p[2]])
-
-    all_appearances = sorted(all_appearances, key=lambda p: [p[1], p[0]])
-    for emergency in emergency_reference:
-        location_count = 0
-        for location in all_appearances:
-            if emergency == location:
-                count[location[0]] -= location_count
-            elif emergency[0] == location[0]:
-                location_count += 1
-
-    # if arrival at the same time to a location
-    # which is patrolling and emergency location
-    count = {key: val for key, val in count.items() if val != 0}
-    for key, val in count.items():
-        windows = []
-        for p in all_appearances:
-            if p[0] == key:
-                windows.append([p[1], p[2]])
-        for i, window in enumerate(windows[:-1]):
-            for window2 in windows[i+1:]:
-                if window[1] > window2[0]:
-                    count[key] -= 1
-
+    # count < 0 possible because sometimes a patrol location is only visited for emergencies
     return {key: val for key, val in count.items() if val > 0}
 
 
