@@ -99,18 +99,39 @@ def update_locations_and_windows(patrol_locations,
             time_windows.append((arrival_time, arrival_time))
 
         elif start in patrol_locations: # currently at patrol location
+            # looking at vehicles that start at the current location
+            all_ids_with_start = [v.v_id for v in vehicles if v.current_location == start]
+            # sorting the vehicles according to arrival
+            # (so the patrolling vehicle continues patrolling)
+            all_ids_with_start = sorted(all_ids_with_start,
+                                        key=lambda idx: [-vehicles[idx].time_at_curr_location,
+                                                         vehicles[idx].time_to_curr_location])
 
             # first appearance
             if starts.count(start) == 1:
                 idx = updated_patrol_locations.index(start)
-                time_windows[idx] = (arrival_time+patrolling_time_per_location-v.time_at_curr_location,
-                                     arrival_time+patrolling_time_per_location-v.time_at_curr_location)
+                # if patrolling: adjusting time window accordingly
+                if all_ids_with_start.index(v.v_id) == 0:
+                    window = (arrival_time+patrolling_time_per_location-v.time_at_curr_location,
+                              arrival_time+patrolling_time_per_location-v.time_at_curr_location)
+                # not patrolling
+                else:
+
+                    window = (arrival_time, arrival_time)
+                time_windows[idx] = window
 
             # duplicated start from patrol location
             else:
                 dummy_locations.append([len(updated_patrol_locations), start])
                 updated_patrol_locations.append(start)
-                time_windows.append((arrival_time, arrival_time))
+                # if patrolling: adjusting time window accordingly
+                if all_ids_with_start.index(v.v_id) == 0:
+                    window = (arrival_time+patrolling_time_per_location-v.time_at_curr_location,
+                              arrival_time+patrolling_time_per_location-v.time_at_curr_location)
+                # not patrolling
+                else:
+                    window = (arrival_time, arrival_time)
+                time_windows.append(window)
 
     return starts, dummy_locations, updated_patrol_locations, time_windows
 
