@@ -3,6 +3,7 @@ __pycache__/
 env/
 cache/
 output/
+img/
 .vscode/
 
 # ignore random output notes
