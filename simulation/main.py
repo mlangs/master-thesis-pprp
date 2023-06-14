@@ -137,6 +137,11 @@ def run_simulation():
             emergency_id = current_event['event_id']
 
             location = emergencies[emergency_id]['location']
+            
+            # needed so a vehicle does not patrol while another vehicle is
+            # dealing with an emergency at the same location
+            if location not in visited_patrol_locations:
+                visited_patrol_locations.append(location)
 
             # if there is no vehicle available an extra vehicle needs to take over
             # no new route needs to be calculated
