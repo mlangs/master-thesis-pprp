@@ -178,7 +178,7 @@ def get_patrol_locations_mismatch(data, patrol_locations):
 
     # remove patrol locations a vehicle visited
     for location in data['visited_patrol_locations']:
-        count[location] -= 1
+        count[location] = count.get(location, 0) - 1
 
     # removing emergency locations
     for emergency in data['emergencies'].values():
@@ -207,7 +207,7 @@ def get_patrolling_times_mismatch(data, police_station, patrolling_time_per_loca
                     route[i+1] not in emergency_reference):
                     if [p[0], p[2]] not in [[x[0], x[2]] for x in emergency_reference]:
                         count += 1
-        return count
+    return count
 
 
 
