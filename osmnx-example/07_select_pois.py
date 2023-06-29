@@ -21,6 +21,10 @@ pois = pd.read_csv(path / 'pois_with nearest node.csv')
 c = Counter(pois['amenity'])
 print(c)
 
+police_stations = pois[pois['amenity'].isin(['police'])]
+print(police_stations)
+print(police_stations.nearest_network_node.tolist())
+
 # select relevant tags
 tags = ['atm', 'bank', 'bar', 'biergarten', 'brothel',
         'cafe', 'casino', 'cinema', 'community_centre',
