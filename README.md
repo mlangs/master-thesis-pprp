@@ -39,7 +39,6 @@
 	- `time_matrix` (cleaned)
 - the `G` graph is saved to `map_data.osm` (updated with travel times)
 
-
 #### data_favoriten.py
 *Caution: relatively huge file!* used for saving the time_matrix, the distance_matrix, the osm_to_index hashtable, the index_to_osm hashtable, edges information and unusable nodes (bad_nodes)
 - the used map data
@@ -62,10 +61,32 @@
 - uses matplotlib to plot a map using a `.osm` file
 - every node on the map is labelled with the node id (might take a few seconds to load)
 
+### 06_get_amenity.py
+- downloads amenity data
+- removes unimportant columns and saves it as `pois.csv`
+- uses longitude and latitute to add the nearest road network node to the dataframe
+  if the amenity is not a point (linestring, polygon, multipolygon), the average coordinates are taken
+- saves the dataframe as `pois_with nearest node.csv`
+
+#### pois.csv
+- the amenity dataframe (most of the columns are removed) 
+
+#### pois_with nearest node.csv
+- the `pois.csv` dataframe with the added `nearest_network_node` column
+
+### 07_select_pois.py
+- reads `pois_with nearest node.csv`
+- prints a dictionary of all amenities
+- prints all police stations and a list of their nearest network nodes
+- takes a list of relevant tags
+- removes entries where the nearest node is a removed node
+- returns a sample of unique nodes with relevant tags
+
 
 ## simulation/
 ### config.py
 - the config file
+- sets a `SEED_LIST`, the `NUMBER_OF_SIMULATIONS`, the number of simultaneous processes `MAX_WORKERS`
 
 ### main.py
 - the main file
