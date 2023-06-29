@@ -10,14 +10,15 @@ import mvf # "function module"
 import vrptw_metaheuristic as vm # ortools functions
 
 
-def run_simulation():
+def run_simulation(seed=None):
     """
     runs the simulation one time
     """
     simulation_start_time = time.perf_counter() # pref_counter_ns
 
     # seed = time.time # returns a float (supported in random.seed)
-    seed = time.time_ns() # returns an integer (nanoseconds)
+    if seed is None:
+        seed = time.time_ns() # returns an integer (nanoseconds)
     random.seed(seed)
 
     print(f"\nStarting simulation with seed: {seed}")
@@ -33,8 +34,8 @@ def run_simulation():
     # for example: all vehicles are at emergencies and another emergency occurs
     extra_vehicles = {}
 
-    # for keeping track of visited patrol locations
-    visited_patrol_locations = []
+    # for keeping track of visited locations
+    visited_locations = []
 
     # create a list of emergencies
     emergencies = mvf.create_emergencies(c.NUMBER_OF_EVENTS_MU,
@@ -61,21 +62,8 @@ def run_simulation():
         patrol_locations, time_windows = mvf.update_patrol_locations_and_time_windows(
                                                 c.PATROL_LOCATIONS,
                                                 c.TIME_WINDOWS,
-                                                visited_patrol_locations,
+                                                visited_locations,
                                                 current_time)
-
-
-        # if there are no patrol locations left to process
-        # the route back to the police station is calculated
-        # for all vehicles which currently handle an emergency
-        # and the while loop is exited
-        #if not patrol_locations:
-        #    for v in vehicles:
-        #        if v.route[-1][0] != c.POLICE_STATION:
-        #            travel_time = d.time_matrix[d.osm_to_index[v.current_location]][d.osm_to_index[c.POLICE_STATION]]
-        #            arrival_time = v.route[-1][2]+travel_time+v.time_to_curr_location
-        #            v.route.append([c.POLICE_STATION, arrival_time, arrival_time])
-        #    break
 
         # if cars are available, new routes can be calculated
         if any([v.emergency_status is False for v in vehicles]):
@@ -122,11 +110,11 @@ def run_simulation():
         for v in vehicles:
             v.update(current_time, d.time_matrix, d.osm_to_index, c.path)
 
-        # update visited patrol locations
-        visited_patrol_locations = mvf.update_vpl(visited_patrol_locations,
-                                                  c.PATROL_LOCATIONS,
-                                                  vehicles,
-                                                  current_time)
+        # update visited locations
+        visited_locations = mvf.update_vl(visited_locations,
+                                           c.PATROL_LOCATIONS,
+                                           vehicles,
+                                           current_time)
 
         # handle the event
         if current_event['type'] == 'end':
@@ -137,11 +125,11 @@ def run_simulation():
             emergency_id = current_event['event_id']
 
             location = emergencies[emergency_id]['location']
-            
+
             # needed so a vehicle does not patrol while another vehicle is
             # dealing with an emergency at the same location
-            if location not in visited_patrol_locations:
-                visited_patrol_locations.append(location)
+            if location not in visited_locations:
+                visited_locations.append(location)
 
             # if there is no vehicle available an extra vehicle needs to take over
             # no new route needs to be calculated
@@ -167,12 +155,12 @@ def run_simulation():
             vehicles[v_id].emergency_status = True
             vehicles[v_id].emergency_ids.append(emergency_id)
 
-            # adding the current location to visited_patrol_locations
+            # adding the current location to visited_locations
             # if the vehicles was there patrolling
             if  vehicles[v_id].current_location in c.PATROL_LOCATIONS and \
-                vehicles[v_id].current_location not in visited_patrol_locations and \
+                vehicles[v_id].current_location not in visited_locations and \
                 vehicles[v_id].time_at_curr_location > 0:
-                visited_patrol_locations.append(vehicles[v_id].current_location)
+                visited_locations.append(vehicles[v_id].current_location)
 
             # adjusting the route and appending the new arrival location
             vehicles[v_id].update_current_route(current_time, data, [])
@@ -196,10 +184,11 @@ def run_simulation():
 
 
     # updating the visited patrol locations
-    visited_patrol_locations = mvf.update_vpl(visited_patrol_locations,
+    # jumping a full day (86400 seconds) to guarantee to catch everything
+    visited_locations = mvf.update_vl(visited_locations,
                                               c.PATROL_LOCATIONS,
                                               vehicles,
-                                              current_time+86400) # jump full day to catch everything
+                                              current_time+86400)
 
 
     # save seed, vehicle data (including routes), visited patrol locations, emergencies
@@ -210,7 +199,7 @@ def run_simulation():
     mvf.save_to_file(c.path,
                      seed,
                      vehicles,
-                     visited_patrol_locations,
+                     visited_locations,
                      emergencies,
                      extra_vehicles,
                      simulation_time)
@@ -223,9 +212,11 @@ def main():
     runs the simulate function
     uses multiprocessing
     """
-
+    seed_list = c.SEED_LIST
+    seed_list += [None for _ in range(c.NUMBER_OF_SIMULATIONS-len(c.SEED_LIST)) ]
     with concurrent.futures.ProcessPoolExecutor(max_workers=c.MAX_WORKERS) as executor:
-        results = [executor.submit(run_simulation) for _ in range(c.NUMBER_OF_SIMULATIONS)]
+        results = [executor.submit(run_simulation, seed)
+                   for seed, _ in zip(seed_list, range(c.NUMBER_OF_SIMULATIONS))]
 
         for future in concurrent.futures.as_completed(results):
             print(f"COMPLETED:\n{future.result()}")

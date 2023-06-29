@@ -191,7 +191,7 @@ def create_data_model(patrol_locations,
 
 def update_patrol_locations_and_time_windows(patrol_locations,
                                              time_windows,
-                                             visited_patrol_locations,
+                                             visited_locations,
                                              current_time):
     """
     remove visited patrol locations and patrol locations with
@@ -202,7 +202,7 @@ def update_patrol_locations_and_time_windows(patrol_locations,
     new_patrol_locations = []
     new_time_windows = []
     for patrol_location, time_window in zip(patrol_locations, time_windows):
-        if ( patrol_location in visited_patrol_locations or
+        if ( patrol_location in visited_locations or
                 time_window[1]-current_time <= 0 ): # departure time cannot be negative
             continue
         else:
@@ -383,7 +383,7 @@ def choose_response_vehicle(emergency,
 
 
 
-def update_vpl(visited_patrol_locations, patrol_locations, vehicles, current_time):
+def update_vl(visited_locations, patrol_locations, vehicles, current_time):
     """
     updates the visited patrol locations
     a patrol location is considered "visited" if some time
@@ -393,22 +393,20 @@ def update_vpl(visited_patrol_locations, patrol_locations, vehicles, current_tim
         for p in v.route:
             if p[0] not in patrol_locations:
                 continue
-            if p[0] in visited_patrol_locations:
+            if p[0] in visited_locations:
                 continue
 
             if p[1] < p[2] and p[2] <= current_time:
-                visited_patrol_locations.append(p[0])
-            #if p[1]+patrolling_time_per_location <= p[2] and p[2] <= current_time:
-            #    visited_patrol_locations.append(p[0])
+                visited_locations.append(p[0])
 
-    return visited_patrol_locations
+    return visited_locations
 
 
 
 def save_to_file(path,
                  seed,
                  vehicles,
-                 visited_patrol_locations,
+                 visited_locations,
                  emergencies,
                  extra_vehicles,
                  calculation_time):
@@ -434,7 +432,7 @@ def save_to_file(path,
 
     data['vehicles']=vehicles_dict
 
-    data['visited_patrol_locations']=visited_patrol_locations
+    data['visited_locations']=visited_locations
     data['emergencies']=emergencies
     data['extra_vehicles']=extra_vehicles
 
