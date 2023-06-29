@@ -67,8 +67,8 @@ def main():
     generating and saving images
     """
     path = Path(__file__).parent.absolute()
-    seed = 1686670141043741808
-    
+    seed = 1686737036178426092
+
     data = get_data(path / f"output/{seed}.json")
     G = ox.io.load_graphml(filepath=path / 'map_data.osm')
 
