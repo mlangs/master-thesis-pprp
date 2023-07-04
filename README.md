@@ -9,6 +9,8 @@
 
 
 ## osmnx-example/
+shows how to retrieve openstreetmap data and how to prepare it for the simulation
+
 ### 01_download_map.py
 - example how map data can be downloaded
 - uses `osmnx` to download a `.osm` map file and saves it
@@ -84,22 +86,109 @@
 
 
 ## simulation/
+contains the actual simulation files and scripts to process the results 
+
 ### config.py
 - the config file
-- sets a `SEED_LIST`, the `NUMBER_OF_SIMULATIONS`, the number of simultaneous processes `MAX_WORKERS`
+- sets a `SEED_LIST`, the `NUMBER_OF_SIMULATIONS`, the number of simultaneous processes `MAX_WORKERS` and many other parameters
 
 ### main.py
-- the main file
-- conducts the simulation
+- runs the simulation
+- imports config, mvf, vrptw_metaheuristic and data_favoriten
 
 #### data_favoriten.py
-- the map pre-processed map data
+- the pre-processed map data
 
 ### mvf.py
--additional functions
+contains functions for the simulation
+- create_emergencies:
+	creates and returns emergencies
+- update_locations_and_windows:
+	prepares the locations and time windows for the create_data_model function
+	time windows need to get handled differently for different cases
+	to force the correct behavior
+- create_data_model:
+	creates the data dictionary, which is needed for ortools
+- update_patrol_locations_and_time_windows:
+	removes visited patrol locations, removes patrol locations with missed time windows and adapts time windows
+- Vehicle class:
+	for keeping track of vehicle information
+	- Vehicle.update:
+		calculates current_location, time_to_curr_location, time_at_curr_location
+	- Vehicle.update_current_route:
+		does a backup of the route and updates it with the new route data
+- choose_response_vehicle:
+	returns the vehicle id of the response vehicle, the arrival time at the emergency and the departure_time after the emergency is dealt with
+- update_vl:
+	updates the visited locations list
+- save_to_file:
+	creates an output folder and saves the results there as a `{seed}.json` file
 
 #### map_data.osm
 - the map data including added travel times
 
 ### vrptw_metaheuristic.py
-- google or-tools functions
+contains adapted google ortools functions
+- print_solution:
+	prints the solution to the console
+- get_routes:
+	formats the route data for further processing
+- plan_routes:
+	solves the VRP with time windows
+
+### testing_unittest.py
+- test_settings:
+	some tests for the config parameters to make identifying configuration mistakes easier
+- test_create_emergencies:
+	creates 100 emergencies, asserts correct indexing and plausible results
+- test_update_locations_and_windows:
+	tests if the mvf.update_locations_and_windows function returns the correct starts, dummy_locations, updated_patrol_locations and time_windows
+- test_create_data_model:
+	tests if create_data_model return the correct data dictionary
+- test_update_patrol_locations_and_time_windows:
+	tests if new_patrol_locations and new_time_windows are updated correctly
+- test_vehicle_class_update:
+	tests if Vehicle.update returns the correct values for current_location, time_to_curr_location and time_at_curr_location
+- test_vehicle_class_update_current_route:
+	tests if the route is updated correctly
+- test_choose_response_vehicle:
+	a test for choosing a reponse vehicle (id, arrival time and return time needs to be correct)
+- test_update_vl:
+	tests if a location is correctly added to the visited_locations list
+
+### testing_plausibility.py
+- get_emergency_length_errors:
+	returns the number of times the emergency duration is not equal to the end-arrival time
+- get_emergency_time_errors:
+	returns the number of times the emergency time order is wrong (arrival time before start time)
+- get_missed_emergencies_errors:
+	returns the number of missed events - number of extra vehicles, which should yield 0
+- get_did_not_reach_police_station_errors:
+	returns the number of times a vehicles is not at the police station when the simulation ends
+- get_travel_time_errors:
+	returns the number of times a vehicle is faster or slower than it is supposed to be according to the time matrix
+-  get_time_order_errors:
+	returns the number of times a vehicle leaves before it arrives
+- get_wait_times_at_wrong_locations:
+	looking only at locations, which are not a patrol location or the police station
+	returns the difference between the time a vehicle spends waiting and attending emergencies (should be 0)
+- get_visited_locations_duplicate_mismatch:
+	returns the number of duplicates in the visited_locations list
+- get_not_plausible_patrol_locations_visits:
+	the number of all visited patrol locations + all emergencies at patrol locations needs to greater than all actual visits at patrol locations (emergency can happen after patrolling, no patrolling after emergency) 
+- get_patrolling_time_errors:
+	returns the number of times the the duration of a stay is not correct
+	it is allowed to
+	- stay at the police station
+	- pass the location (0 time spend)
+	- patrol at the location (exactly patrolling_time_per_location time spend, has to be a patrol location)
+	- stay at a patrol location (time > 0), but leaving for an emergency
+	- stay because there is currently an emergency (excactly the arrival and end time)
+	- stay longer because an emergency appeared at the patrol location while patrolling
+	if this criteria is not matched, there has to be a wrong time or wrong location
+
+###  read_results.py
+- reads the results and saves the processed data in `favoriten.csv`
+
+#### favoriten.csv
+- results of the simulations, can be imported as pandas dataframe
