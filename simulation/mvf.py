@@ -194,9 +194,8 @@ def update_patrol_locations_and_time_windows(patrol_locations,
                                              visited_locations,
                                              current_time):
     """
-    remove visited patrol locations and patrol locations with
-    missed time windows
-    and adapt time windows
+    removes visited patrol locations, removes patrol locations with
+    missed time windows and adapts time windows
     """
 
     new_patrol_locations = []
@@ -385,7 +384,7 @@ def choose_response_vehicle(emergency,
 
 def update_vl(visited_locations, patrol_locations, vehicles, current_time):
     """
-    updates the visited patrol locations
+    updates the visited locations list
     a patrol location is considered "visited" if some time
     was spend there (also if the time was during an emergency)
     """
@@ -404,6 +403,13 @@ def update_vl(visited_locations, patrol_locations, vehicles, current_time):
 
 
 def save_to_file(path,
+                 firstsolutionstategy,
+                 localsearchmetaheuristic,
+                 solution_limit,
+                 time_limit,
+                 patrol_locations,
+                 police_station,
+                 patrolling_time_per_location,
                  seed,
                  vehicles,
                  visited_locations,
@@ -420,7 +426,15 @@ def save_to_file(path,
 
     data = {}
     data['seed']=seed
-    data['calculation_time'] = calculation_time
+    data['calculation_time']=calculation_time
+    data['firstsolutionstategy'] = firstsolutionstategy
+    data['localsearchmetaheuristic'] = localsearchmetaheuristic
+    data['solution_limit'] = solution_limit
+    data['time_limit'] = time_limit
+    data['patrol_locations'] = patrol_locations
+    data['police_station'] = police_station
+    data['patrolling_time_per_location'] = patrolling_time_per_location
+
     vehicles_dict={}
     for v in vehicles:
         v_dict={}

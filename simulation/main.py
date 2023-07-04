@@ -14,7 +14,7 @@ def run_simulation(seed=None):
     """
     runs the simulation one time
     """
-    simulation_start_time = time.perf_counter() # pref_counter_ns
+    calculation_start_time = time.perf_counter() # pref_counter_ns
 
     # seed = time.time # returns a float (supported in random.seed)
     if seed is None:
@@ -89,7 +89,11 @@ def run_simulation(seed=None):
             # calculating the routes
             planned_routes = vm.plan_routes(data,
                                             c.MAX_PATROLLING_TIME_PER_VEHICLE,
-                                            c.PATROLLING_TIME_PER_LOCATION)
+                                            c.PATROLLING_TIME_PER_LOCATION,
+                                            c.FIRSTSOLUTIONSTATEGY,
+                                            c.LOCALSEARCHMETAHEURISTIC,
+                                            c.SOLUTION_LIMIT,
+                                            c.TIME_LIMIT)
 
             # update vehicle objects with the new routes
             for v, route in zip( [v for v in vehicles if v.emergency_status is False],
@@ -194,16 +198,23 @@ def run_simulation(seed=None):
     # save seed, vehicle data (including routes), visited patrol locations, emergencies
     # and demand of extra vehicles to a json file
 
-    simulation_time = time.perf_counter() - simulation_start_time
+    calculation_time = time.perf_counter() - calculation_start_time
 
     mvf.save_to_file(c.path,
+                     c.FIRSTSOLUTIONSTATEGY,
+                     c.LOCALSEARCHMETAHEURISTIC,
+                     c.SOLUTION_LIMIT,
+                     c.TIME_LIMIT,
+                     c.PATROL_LOCATIONS,
+                     c.POLICE_STATION,
+                     c.PATROLLING_TIME_PER_LOCATION,
                      seed,
                      vehicles,
                      visited_locations,
                      emergencies,
                      extra_vehicles,
-                     simulation_time)
-    return f"Seed {seed} done.\nCalculation took {simulation_time} seconds."
+                     calculation_time)
+    return f"Seed {seed} done.\nCalculation took {calculation_time} seconds."
 
 
 

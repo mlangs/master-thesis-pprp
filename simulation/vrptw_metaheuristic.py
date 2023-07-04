@@ -42,10 +42,10 @@ def get_routes(data, manager, routing, solution, patrolling_time_per_location):
         route = []
         while not routing.IsEnd(index):
             time_var = time_dimension.CumulVar(index)
+            # patrolling_time_per_location needs to be subtracted!
             route.append((manager.IndexToNode(index),
                           max(solution.Min(time_var)-patrolling_time_per_location, 0),
                           solution.Max(time_var)))
-                          # patrolling_time_per_location needs to be subtracted!
             index = solution.Value(routing.NextVar(index))
 
         time_var = time_dimension.CumulVar(index)
@@ -58,23 +58,27 @@ def get_routes(data, manager, routing, solution, patrolling_time_per_location):
 
 
 
-def plan_routes(data, max_patrolling_time_per_vehicle=86400, patrolling_time_per_location=0):
+def plan_routes(data, max_patrolling_time_per_vehicle, patrolling_time_per_location,
+                firstsolutionstategy, localsearchmetaheuristic,
+                solution_limit, time_limit):
     """
-    Solve the VRP with time windows.
-    uses default max_patrolling_time_per_vehicle=86400 (one day)
+    solves the VRP with time windows.
     """
 
     # Create the routing index manager.
     manager = pywrapcp.RoutingIndexManager(len(data['time_matrix']),
-                                           data['num_vehicles'], data['starts'], data['ends'])
-    # data['starts'], data['ends']
+                                           data['num_vehicles'],
+                                           data['starts'],
+                                           data['ends'])
 
     # Create Routing Model.
     routing = pywrapcp.RoutingModel(manager)
 
     # Create and register a transit callback.
     def time_callback(from_index, to_index):
-        """Returns the travel time between the two nodes."""
+        """
+        returns the travel time between the two nodes
+        """
         # Convert from routing variable Index to time matrix NodeIndex.
         from_node = manager.IndexToNode(from_index)
         to_node = manager.IndexToNode(to_index)
@@ -90,11 +94,11 @@ def plan_routes(data, max_patrolling_time_per_vehicle=86400, patrolling_time_per
     routing.SetArcCostEvaluatorOfAllVehicles(transit_callback_index)
 
     # Add Time Windows constraint.
-    time = 'Time'
+    time = 'Time' # dimension name
     routing.AddDimension(
         transit_callback_index,
-        60*30,  # 30, # allow waiting time
-        60*60*3,  # maximum time per vehicle
+        0, # allows waiting time, not relevant with time window like (0, SIMULATION_DURATION)
+        max_patrolling_time_per_vehicle,  # maximum time per vehicle
         False,  # Don't force start cumul to zero.
         time)
     time_dimension = routing.GetDimensionOrDie(time)
@@ -119,8 +123,6 @@ def plan_routes(data, max_patrolling_time_per_vehicle=86400, patrolling_time_per
     for vehicle_id in range(data['num_vehicles']):
         time_dimension.SetSpanUpperBoundForVehicle(max_patrolling_time_per_vehicle, vehicle_id)
 
-    # time_dimension.SetCumulVarSoftUpperBound(1, 4, 2)
-
     # Add time window constraints for each location except for the police station.
     for location_idx, time_window in enumerate(data['time_windows']):
         if location_idx == data['police_station']:
@@ -144,17 +146,54 @@ def plan_routes(data, max_patrolling_time_per_vehicle=86400, patrolling_time_per
     search_parameters = pywrapcp.DefaultRoutingSearchParameters()
     search_parameters.log_search = False
 
-    search_parameters.first_solution_strategy = (
-        routing_enums_pb2.FirstSolutionStrategy.PATH_CHEAPEST_ARC)
 
-    search_parameters.local_search_metaheuristic = (
-        routing_enums_pb2.LocalSearchMetaheuristic.GUIDED_LOCAL_SEARCH)
+    first_solution_options = {'UNSET': 0,
+                              'AUTOMATIC': 15,
+                              'PATH_CHEAPEST_ARC': 3,
+                              'PATH_MOST_CONSTRAINED_ARC': 4,
+                              'EVALUATOR_STRATEGY': 5,
+                              'SAVINGS': 10,
+                              'SWEEP': 11,
+                              'CHRISTOFIDES': 13,
+                              'ALL_UNPERFORMED': 6,
+                              'BEST_INSERTION': 7,
+                              'PARALLEL_CHEAPEST_INSERTION': 8,
+                              'SEQUENTIAL_CHEAPEST_INSERTION': 14,
+                              'LOCAL_CHEAPEST_INSERTION': 9,
+                              'GLOBAL_CHEAPEST_ARC': 1,
+                              'LOCAL_CHEAPEST_ARC': 2,
+                              'FIRST_UNBOUND_MIN_VALUE': 12}
+
+    if firstsolutionstategy in first_solution_options:
+        search_parameters.first_solution_strategy = (
+            first_solution_options[firstsolutionstategy])
+    else:
+        raise ValueError('Missing or wrong firstsolutionstategy')
+    #search_parameters.first_solution_strategy = (
+    #    routing_enums_pb2.FirstSolutionStrategy.AUTOMATIC)
+
+    local_search_metaheuristic_options = {'UNSET': 0,
+                                          'AUTOMATIC': 6,
+                                          'GREEDY_DESCENT': 1,
+                                          'GUIDED_LOCAL_SEARCH': 2,
+                                          'SIMULATED_ANNEALING': 3,
+                                          'TABU_SEARCH': 4,
+                                          'GENERIC_TABU_SEARCH': 5}
+    if localsearchmetaheuristic in local_search_metaheuristic_options:
+        search_parameters.local_search_metaheuristic =(
+            local_search_metaheuristic_options[localsearchmetaheuristic])
+    else:
+        raise ValueError('Missing or wrong localsearchmetaheuristic')
+    #search_parameters.local_search_metaheuristic = (
+    #    routing_enums_pb2.LocalSearchMetaheuristic.GREEDY_DESCENT)
 
     # set a time limit of x seconds for a search
-    search_parameters.time_limit.seconds = 1
+    search_parameters.time_limit.seconds = time_limit
 
     # set a solution limit of x for a search
-    search_parameters.solution_limit = 100
+    search_parameters.solution_limit = solution_limit
+
+    # print(search_parameters)
 
     # Solve the problem.
     solution = routing.SolveWithParameters(search_parameters)

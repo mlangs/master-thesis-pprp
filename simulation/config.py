@@ -11,9 +11,44 @@ path = Path(__file__).parent.absolute()
 
 SEED_LIST = []
 # SEED_LIST = [1,2,3,4,5,6,7,1687358010347487384]
-NUMBER_OF_SIMULATIONS = 50
+NUMBER_OF_SIMULATIONS = 1
 MAX_WORKERS = 4 # number of simultaneous processes
 
+"""
+First Solution Straegy Options:
+'UNSET'
+'AUTOMATIC'
+'PATH_CHEAPEST_ARC'
+'PATH_MOST_CONSTRAINED_ARC'
+'EVALUATOR_STRATEGY'
+'SAVINGS'
+'SWEEP'
+'CHRISTOFIDES'
+'ALL_UNPERFORMED'
+'BEST_INSERTION'
+'PARALLEL_CHEAPEST_INSERTION'
+'SEQUENTIAL_CHEAPEST_INSERTION'
+'LOCAL_CHEAPEST_INSERTION'
+'GLOBAL_CHEAPEST_ARC'
+'LOCAL_CHEAPEST_ARC'
+'FIRST_UNBOUND_MIN_VALUE'
+"""
+FIRSTSOLUTIONSTATEGY = 'PATH_CHEAPEST_ARC'
+
+"""
+Local Search Metaheuristic Options:
+'UNSET', 'AUTOMATIC', 'GREEDY_DESCENT', 'GUIDED_LOCAL_SEARCH',
+'SIMULATED_ANNEALING', 'TABU_SEARCH', 'GENERIC_TABU_SEARCH'
+"""
+LOCALSEARCHMETAHEURISTIC = 'GUIDED_LOCAL_SEARCH'
+SOLUTION_LIMIT = 100 # number of solutions generated during the search
+TIME_LIMIT = 1  # time limit in seconds
+
+# used for TIME_WINDOWS, MAX_PATROLLING_TIME_PER_VEHICLE
+# and TIME_OF_EVENT_MAX
+# does end the simulation implicitly:
+# - there are no more emergencies after that time
+# - time windows for patrol locations end at that time
 SIMULATION_DURATION = 60*60*3
 
 # the police station can not be a patrol_locations
@@ -27,31 +62,12 @@ PATROL_LOCATIONS = [294231718, 2261966238, 61832440, 59640989, 127376799,
 
 TIME_WINDOWS = [(0, SIMULATION_DURATION) for _ in PATROL_LOCATIONS]
 
-"""TIME_WINDOWS = [
-	 (0, 60*60*3),	# 0
-	 (0, 60*60*3),	# 1
-	 (0, 60*60*3),	# 2
-	 (0, 60*60*3),	# 3
-	 (0, 60*60*3),	# 4
-	 (0, 60*60*3),	# 5
-	 (0, 60*60*3),	# 6
-	 (0, 60*60*3),	# 7
-	 (0, 60*60*3),	# 8
-	 (0, 60*60*3),	# 9
-	 (0, 60*60*3),	# 10
-	 (0, 60*60*3),	# 11
-	 (0, 60*60*3),	# 12
-	 (0, 60*60*3),	# 13
-	 (0, 60*60*3),	# 14
-	 (0, 60*60*3),	# 15
-	 (0, 60*60*3),	# 16
-	 (0, 60*60*3),	# 17
-	 (0, 60*60*3),	# 18
-	 (0, 60*60*3),	# 19
-]"""
-
 NUMBER_OF_VEHICLES = 4
 PATROLLING_TIME_PER_LOCATION = 60*5
+
+# is used in each calculation and never updated
+# therefore it only guarantees that the initial routes without
+# emergencies finish in time
 MAX_PATROLLING_TIME_PER_VEHICLE = SIMULATION_DURATION  # 86400 for one full day
 
 # real police stations in favoriten
