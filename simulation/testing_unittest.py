@@ -12,11 +12,11 @@ import mvf
 
 class Tests(unittest.TestCase):
     """
-    some test cases, but not very excessive
+    test cases
     """
     def test_settings(self):
         """
-        some tests for the config files
+        tests for the config files
         """
 
         # see if all start times are lower than their associated end times
@@ -24,15 +24,21 @@ class Tests(unittest.TestCase):
             self.assertTrue(time_window[0] <= time_window[1])
 
         # see if the parameters are plausible
+        self.assertTrue(c.NUMBER_OF_SIMULATIONS > 0)
+        self.assertTrue(c.MAX_WORKERS > 0)
+        self.assertTrue(c.SOLUTION_LIMIT > 0)
+        self.assertTrue(c.TIME_LIMIT > 0)
+        self.assertTrue(c.SIMULATION_DURATION > 0)
         self.assertTrue(c.NUMBER_OF_VEHICLES > 0)
         self.assertTrue(c.PATROLLING_TIME_PER_LOCATION > 0)
         self.assertTrue(c.MAX_PATROLLING_TIME_PER_VEHICLE > 0)
+
         self.assertFalse(c.POLICE_STATION in c.PATROL_LOCATIONS)
 
 
     def test_create_emergencies(self):
         """
-        some tests for the create_emergencies function
+        tests for the create_emergencies function
         """
         simulation_duration = 60*60*3
         number_of_events_mu = 6
@@ -74,7 +80,7 @@ class Tests(unittest.TestCase):
 
     def test_update_locations_and_windows(self):
         """
-        some tests for the update_locations_and_windows function
+        tests for the update_locations_and_windows function
         """
         patrol_locations = [3674544936,
                             298161859,
@@ -137,18 +143,18 @@ class Tests(unittest.TestCase):
 
         self.assertTrue(time_windows == [(0, 86400),
                                          (185, 185),
-                                         (0, 0), #
+                                         (0, 0),
                                          (0, 0),
                                          (0, 60*60*3),
                                          (50, 50),
                                          (0, 0),
-                                         (115, 115)]) #
+                                         (115, 115)])
 
 
 
     def test_create_data_model(self):
         """
-        some tests for the create_data_model function
+        tests for the create_data_model function
         """
         patrol_locations = [3835886950, 34516819, 61831215]
         updated_patrol_locations = [17322884, 3835886950, 34516819, 61831215,
@@ -200,7 +206,7 @@ class Tests(unittest.TestCase):
 
     def test_update_patrol_locations_and_time_windows(self):
         """
-        some tests for the update_patrol_locations_and_time_windows function
+        tests for the update_patrol_locations_and_time_windows function
         """
         patrol_locations = [17322879, 17322882, 17322883, 17322887, 17322888,
                             17322889, 17322896, 17322899, 27027753, 27027755]
@@ -217,12 +223,12 @@ class Tests(unittest.TestCase):
             (0, 75),	    # 9
             ]
 
-        visited_patrol_locations = [17322883, 17322896, 17322879]
+        visited_locations = [17322883, 17322896, 17322879]
         current_time = 75
         new_patrol_locations, new_time_windows =  mvf.update_patrol_locations_and_time_windows(
                                                     patrol_locations,
                                                     time_windows,
-                                                    visited_patrol_locations,
+                                                    visited_locations,
                                                     current_time)
 
         # correct length for this example
@@ -230,8 +236,8 @@ class Tests(unittest.TestCase):
         self.assertTrue(len(new_time_windows) == 5)
 
         # visited locations not in new list
-        for vpl in visited_patrol_locations:
-            self.assertFalse(vpl in new_patrol_locations)
+        for vl in visited_locations:
+            self.assertFalse(vl in new_patrol_locations)
 
         # edge timings
         self.assertTrue(17322899 in new_patrol_locations)
@@ -253,7 +259,7 @@ class Tests(unittest.TestCase):
 
     def test_vehicle_class_update(self):
         """
-        some tests for the update function in the Vehicle class
+        tests for the update function in the Vehicle class
         """
         start = 17322884
         v_id = 1
@@ -286,7 +292,7 @@ class Tests(unittest.TestCase):
 
     def test_vehicle_class_update_current_route(self):
         """
-        some tests for the update_current_route function in the Vehicle class
+        tests for the update_current_route function in the Vehicle class
         """
         start = 17322884
         v_id = 0
@@ -350,7 +356,7 @@ class Tests(unittest.TestCase):
 
     def test_choose_response_vehicle(self):
         """
-        some tests for the choose_response_vehicle function
+        tests for the choose_response_vehicle function
         """
         current_time = 34
         vehicles = [mvf.Vehicle(0, 293281751), mvf.Vehicle(1, 17322884)]
@@ -382,28 +388,40 @@ class Tests(unittest.TestCase):
 
 
 
-    def test_update_vpl(self):
+    def test_update_vl(self):
         """
-        some tests for the update_vpl function
+        tests for the update_vl function
         """
-        result_visited_patrol_locations = [103664213]
-
         vehicles = [mvf.Vehicle(0, 103664213)]
         vehicles[0].route = [[17322884,   0,      0],
                              [103664213,  35,     215],
                              [293281751,  249,    429],
                              [1829857697, 481,    661]]
         patrol_locations = [103664213, 293281751]
-        visited_patrol_locations = []
+        visited_locations = []
         current_time = 216
 
-        visited_patrol_locations = mvf.update_vpl(visited_patrol_locations,
-                                                  patrol_locations,
-                                                  vehicles,
-                                                  current_time)
+        visited_locations = mvf.update_vl(visited_locations,
+                                          patrol_locations,
+                                          vehicles,
+                                          current_time)
 
-        self.assertTrue(visited_patrol_locations == result_visited_patrol_locations)
+        self.assertTrue(visited_locations == [103664213])
+        
+        current_time = 428
+        visited_locations = mvf.update_vl(visited_locations,
+                                          patrol_locations,
+                                          vehicles,
+                                          current_time)
 
+        self.assertTrue(visited_locations == [103664213])
+        current_time = 429
+        visited_locations = mvf.update_vl(visited_locations,
+                                          patrol_locations,
+                                          vehicles,
+                                          current_time)
+
+        self.assertTrue(visited_locations == [103664213, 293281751])
 
 
 if __name__ == '__main__':
