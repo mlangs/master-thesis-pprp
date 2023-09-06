@@ -45,6 +45,7 @@ class Tests(unittest.TestCase):
         number_of_events_sigma = 4
         time_of_event_min = 0
         time_of_event_max = simulation_duration
+        event_min_duration = 60*2
         event_duration_mu = 60*15
         event_duration_sigma = 60*5
 
@@ -61,6 +62,7 @@ class Tests(unittest.TestCase):
                                                  number_of_events_sigma,
                                                  time_of_event_min,
                                                  time_of_event_max,
+                                                 event_min_duration,
                                                  event_duration_mu,
                                                  event_duration_sigma,
                                                  possible_locations_of_events)
@@ -71,7 +73,7 @@ class Tests(unittest.TestCase):
             # start time, duration, arrival time, end time, location
             for emergency in emergencies.values():
                 self.assertTrue(time_of_event_min <= emergency['start_time'] <= time_of_event_max)
-                self.assertTrue(emergency['duration'] >= 0)
+                self.assertTrue(emergency['duration'] >= event_min_duration)
                 self.assertTrue(emergency['arrival_time'] is None)
                 self.assertTrue(emergency['end_time'] is None)
                 self.assertTrue(emergency['assigned_vehicle_id'] is None)

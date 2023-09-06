@@ -42,6 +42,7 @@ def run_simulation(seed=None):
                                          c.NUMBER_OF_EVENTS_SIGMA,
                                          c.TIME_OF_EVENT_MIN,
                                          c.TIME_OF_EVENT_MAX,
+                                         c.EVENT_MIN_DURATION,
                                          c.EVENT_DURATION_MU,
                                          c.EVENT_DURATION_SIGMA,
                                          c.POSSIBLE_LOCATIONS_OF_EVENTS)

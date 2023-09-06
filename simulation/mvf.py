@@ -13,6 +13,7 @@ def create_emergencies(number_of_events_mu,
                        number_of_events_sigma,
                        time_of_event_min,
                        time_of_event_max,
+                       event_min_duration,
                        event_duration_mu,
                        event_duration_sigma,
                        locations_of_events):
@@ -37,7 +38,7 @@ def create_emergencies(number_of_events_mu,
                                                                time_of_event_max)
 
         event_duration = -1
-        while event_duration < 0:
+        while event_duration < event_min_duration:
             event_duration = round(random.gauss(mu=event_duration_mu,
                                                 sigma=event_duration_sigma))
         emergencies[emergency_id]['duration'] = event_duration
