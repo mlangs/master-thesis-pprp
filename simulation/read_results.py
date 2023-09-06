@@ -129,19 +129,19 @@ def main():
 
         # seed
         data_dict['seed'].append(data['seed'])
-        
+
         # solution strategy for initial solution
         data_dict['firstsolutionstategy'].append(data['firstsolutionstategy'])
-        
+
         # metaheuristic for local search
         data_dict['localsearchmetaheuristic'].append(data['localsearchmetaheuristic'])
-        
+
         # solution limit for a search
         data_dict['solution_limit'].append(data['solution_limit'])
-        
+
         # time limit for a search
         data_dict['time_limit'].append(data['time_limit'])
-        
+
         # time planned for patrolling in each location
         data_dict['patrolling_time_per_location'].append(data['patrolling_time_per_location'])
 
