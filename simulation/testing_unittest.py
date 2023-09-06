@@ -409,7 +409,7 @@ class Tests(unittest.TestCase):
                                           current_time)
 
         self.assertTrue(visited_locations == [103664213])
-        
+
         current_time = 428
         visited_locations = mvf.update_vl(visited_locations,
                                           patrol_locations,
