@@ -56,8 +56,8 @@ class Tests(unittest.TestCase):
                                         29006387, 29006395, 29006403, 29006408, 29006423,
                                         29006424, 29006426, 29006430, 29006478, 29006482]
 
-        # testing 100 times
-        for _ in range(100):
+        # testing 1000 times
+        for _ in range(1000):
             emergencies = mvf.create_emergencies(number_of_events_mu,
                                                  number_of_events_sigma,
                                                  time_of_event_min,
