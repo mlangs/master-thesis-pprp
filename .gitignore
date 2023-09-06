@@ -1,11 +1,12 @@
 *.py[cod]
 __pycache__/
-env/
-cache/
-output/
-img/
-charts/
 .vscode/
+cache/
+charts/
+env/
+grafiken/
+img/
+output/
 
 # ignore random output notes
 # *_out.txt
