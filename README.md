@@ -190,5 +190,6 @@ contains adapted google ortools functions
 ###  read_results.py
 - reads the results and saves the processed data in `favoriten.csv`
 
-#### favoriten.csv
-- results of the simulations, can be imported as pandas dataframe
+### stopping_rule_algorithm.py
+- implementation of stopping rules (Chebyshev and Gauss)
+
