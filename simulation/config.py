@@ -9,6 +9,7 @@ from pathlib import Path
 
 path = Path(__file__).parent.absolute()
 
+OUTPUT_PREFIX = "" # "example_"
 SEED_LIST = []
 # SEED_LIST = [1,2,3,4,5,6,7,1687358010347487384]
 NUMBER_OF_SIMULATIONS = 1

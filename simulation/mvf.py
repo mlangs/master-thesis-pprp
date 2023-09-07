@@ -403,7 +403,8 @@ def update_vl(visited_locations, patrol_locations, vehicles, current_time):
 
 
 
-def save_to_file(path,
+def save_to_file(output_prefix,
+                 path,
                  firstsolutionstategy,
                  localsearchmetaheuristic,
                  solution_limit,
@@ -451,7 +452,7 @@ def save_to_file(path,
     data['emergencies']=emergencies
     data['extra_vehicles']=extra_vehicles
 
-    output_file = output_directory / f"{seed}.json"
+    output_file = output_directory / f"{output_prefix}{seed}.json"
     with output_file.open(mode="w") as outfile:
         json.dump(data, outfile, indent=4)
 

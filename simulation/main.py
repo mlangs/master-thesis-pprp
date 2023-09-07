@@ -201,7 +201,8 @@ def run_simulation(seed=None):
 
     calculation_time = time.perf_counter() - calculation_start_time
 
-    mvf.save_to_file(c.path,
+    mvf.save_to_file(c.OUTPUT_PREFIX,
+                     c.path,
                      c.FIRSTSOLUTIONSTATEGY,
                      c.LOCALSEARCHMETAHEURISTIC,
                      c.SOLUTION_LIMIT,
