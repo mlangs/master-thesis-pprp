@@ -91,18 +91,24 @@ def main():
                  # not the time at the police station)
                  'travel_times': [],
                  # total travel time summed up for all vehicles
-                 'total_travel_time': [],
+                 'total_travelled_time': [],
                  # travel distances for all vehicles as list [v1, v2, .. ]
                  'travel_distances': [],
                  # total travel distance summed up for all vehicles
-                 'total_travel_distance': [],
-                 # travel distance, but all raods are only counted once
+                 'total_travelled_distance': [],
+                 # travel distance, but all roads are only counted once
                  # two-way roads are also only counted once
                  'unique_distance': [],
                  # unique_distance / total_km
                  'coverage': [],
-                 # reaction time for attended emergencies
-                 'reaction_times': []}
+                 # reaction times for attended emergencies
+                 'reaction_times': [],
+                 # reaction times for attended emergencies with
+                 # penalties for missed emergencies
+                 'reaction_times_with_penalties': [],
+                 # average of the reaction times including missed penalties
+                 'reaction_times_avg': []
+                 }
 
 
     G = ox.io.load_graphml(filepath=path / 'map_data.osm')
@@ -229,9 +235,9 @@ def main():
             travel_distances.append(travel_distance)
 
         data_dict['travel_times'].append(travel_times)
-        data_dict['total_travel_time'].append(sum(travel_times))
+        data_dict['total_travelled_time'].append(sum(travel_times))
         data_dict['travel_distances'].append(travel_distances)
-        data_dict['total_travel_distance'].append(sum(travel_distances))
+        data_dict['total_travelled_distance'].append(sum(travel_distances))
         data_dict['unique_distance'].append(unique_distance)
         data_dict['coverage'].append(unique_distance / (1000*data_dict['total_km'][-1]))
 
@@ -241,13 +247,30 @@ def main():
                           if emergency['assigned_vehicle_id'] is not None]
         data_dict['reaction_times'].append(reaction_times)
 
+        # reaction times for attended emergencies with
+        # penalties for missed emergencies
+        reaction_times_with_penalties = data_dict['reaction_times'][-1].copy()
+        for _ in range(number_of_missed_emergencies):
+            reaction_times_with_penalties.append(1019)
+        data_dict['reaction_times_with_penalties'].append(reaction_times_with_penalties)
+
+        # average of the reaction times including missed penalties
+        if len(data_dict['reaction_times_with_penalties'][-1]):
+            reaction_times_avg = sum(data_dict['reaction_times_with_penalties'][-1]) \
+                / len(data_dict['reaction_times_with_penalties'][-1])
+        else:
+            reaction_times_avg = None
+        data_dict['reaction_times_avg'].append(reaction_times_avg)
+
     df = pd.DataFrame(data_dict)
-    df.to_csv(path / 'favoriten.csv', index=False, header=True)
+    df.to_csv(path / 'output/simulation.csv', index=False, header=True)
 
     # so pandas does not hide columns in the terminal
     pd.options.display.width = 0
-    print(df.head())
+    # print(df.head())
     # print(df.describe())
+    df.describe().to_csv(path / 'output/simulation_summary.csv', index=True, header=True)
+    # print(data_dict['seed'])
 
 
 if __name__ == '__main__':

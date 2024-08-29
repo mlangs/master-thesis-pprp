@@ -12,8 +12,9 @@ path = Path(__file__).parent.absolute()
 OUTPUT_PREFIX = "" # "example_"
 SEED_LIST = []
 # SEED_LIST = [1,2,3,4,5,6,7,1687358010347487384]
+
 NUMBER_OF_SIMULATIONS = 1
-MAX_WORKERS = 4 # number of simultaneous processes
+MAX_WORKERS = 6 # number of simultaneous processes
 
 """
 First Solution Straegy Options:
@@ -34,7 +35,7 @@ First Solution Straegy Options:
 'LOCAL_CHEAPEST_ARC'
 'FIRST_UNBOUND_MIN_VALUE'
 """
-FIRSTSOLUTIONSTATEGY = 'PATH_CHEAPEST_ARC'
+FIRSTSOLUTIONSTATEGY = 'PARALLEL_CHEAPEST_INSERTION'
 
 """
 Local Search Metaheuristic Options:
@@ -42,8 +43,8 @@ Local Search Metaheuristic Options:
 'SIMULATED_ANNEALING', 'TABU_SEARCH', 'GENERIC_TABU_SEARCH'
 """
 LOCALSEARCHMETAHEURISTIC = 'GUIDED_LOCAL_SEARCH'
-SOLUTION_LIMIT = 100 # number of solutions generated during the search
-TIME_LIMIT = 1  # time limit in seconds
+SOLUTION_LIMIT = 1000000 # number of solutions generated during the search
+TIME_LIMIT = 4  # time limit in seconds
 
 # used for TIME_WINDOWS, MAX_PATROLLING_TIME_PER_VEHICLE
 # and TIME_OF_EVENT_MAX
@@ -60,11 +61,12 @@ PATROL_LOCATIONS = [294231718, 2261966238, 61832440, 59640989, 127376799,
                     78431380, 2309659180, 98806881, 60214963, 123701586,
                     61837807, 27027753, 61831060, 17322884, 293190866,
                     5897096465, 59640976, 1844621714, 103664213, 127367892]
+# PATROL_LOCATIONS = []
 
 TIME_WINDOWS = [(0, SIMULATION_DURATION) for _ in PATROL_LOCATIONS]
 
 NUMBER_OF_VEHICLES = 4
-PATROLLING_TIME_PER_LOCATION = 60*5
+PATROLLING_TIME_PER_LOCATION = 60*10 # similar range to literature
 
 # is used in each calculation and never updated
 # therefore it only guarantees that the initial routes without

@@ -193,7 +193,9 @@ def plan_routes(data, max_patrolling_time_per_vehicle, patrolling_time_per_locat
     # set a solution limit of x for a search
     search_parameters.solution_limit = solution_limit
 
+    # shows search parameters
     # print(search_parameters)
+    # exit()
 
     # Solve the problem.
     solution = routing.SolveWithParameters(search_parameters)
